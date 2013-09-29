@@ -1,0 +1,195 @@
+<!doctype html>
+ <html lang="no">
+    <head>
+        <meta charset="utf-8" />
+        <title>Camel schmamel</title>
+
+        <meta name="description" content="Presentasjon av Apache Camel for internt fagseminar." />
+        <meta name="author" content="Robin Skoglund" />
+
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+        <link rel="stylesheet" href="reveal.js-2.5.0/css/reveal.min.css" />
+        <link rel="stylesheet" href="reveal.js-2.5.0/css/theme/default.css" id="theme">
+
+        <!-- For syntax highlighting -->
+        <link rel="stylesheet" href="reveal.js-2.5.0/lib/css/zenburn.css">
+
+        <!-- If the query includes 'print-pdf', use the PDF print sheet -->
+        <script>
+            document.write( '<link rel="stylesheet" href="reveal.js-2.5.0/css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+        </script>
+
+        <!--[if lt IE 9]>
+        <script src="reveal.js-2.5.0/lib/js/html5shiv.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+
+        <div class="reveal">
+            <div class="slides">
+
+                <section>
+                    <h1>Camel Schmamel</h1>
+                    <pre><code class="java" data-trim>
+from("http:camel.apache.org")
+    .filter(body().contains("buzzword")).to("file:/dev/null")
+    .to(scrutinizer) // implementasjon: robinsk
+    .to("mock:result");
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Apache Camel</h2>
+
+                    <ul>
+                        <li>Hva er det?</li>
+                        <li>Hva kan man gjøre med det?</li>
+                        <li>Drittslenging</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <section>
+                        <h2>Hva er Apache Camel?</h2>
+                        <blockquote cite="http://camel.apache.org/">
+                            &ldquo;Apache Camel ™ is a versatile open-source integration framework based on known Enterprise Integration Patterns.&rdquo;
+                        </blockquote>
+                    </section>
+
+                    <section>
+                        <h1>Javel?</h1>
+                    </section>
+
+                    <section>
+                        <h2>Begreper</h2>
+                        <ul>
+                            <li>Route</li>
+                            <li>Message / Exchange</li>
+                            <li>Component</li>
+                            <li>Endpoint</li>
+                            <li>Processor</li>
+                            <li>CamelContext</li>
+                        </ul>
+                        <br />
+                        <br />
+                        <blockquote>
+                            &laquo;A <b>route</b> defines the <b>processing</b> used on an inbound <b>message</b>
+                            <b>exchange</b> from a specific <b>endpoint</b> within a <b>camel context</b>.&raquo;
+                        </blockquote>
+                    </section>
+
+                    <section>
+                        <h3>Route</h3>
+
+                        <pre><code class="java" data-trim>
+from("activemq:ldap-provisjonering.passord")
+    .unmarshal().xmlBeans() // transformer
+    .bean(passwordChangeService) // gjør noe
+    .marshal().xmlBeans().convertBodyTo(String.class) // transformer
+    .to("activemq:routing.meldingslobby.stop"); // send videre
+                        </code></pre>
+                    </section>
+
+                    <section>
+                        <h3>Component</h3>
+                        <p>
+                            En komponent er et transportadapter, f.eks. http, ftp, jms.
+                        </p>
+
+                        <pre><code class="java" data-trim>
+from("activemq:foo").to("direct:result");
+//        ↳   komponent   ↵
+                        </code></pre>
+                    </section>
+
+                    <section>
+                        <h3>Endpoint</h3>
+                        <p>
+                            Komponenter eksponerer <strong>endepunkter</strong>, typisk representert som en URI.
+                        </p>
+
+                        <pre><code class="java" data-trim>
+from("&lt;endpoint&gt;").to("&lt;endpoint&gt;");
+from("&lt;component&gt;:&lt;uri&gt;").to("&lt;component&gt;:&lt;uri&gt;");
+from("activemq:foo").to("direct:result");
+                        </code></pre>
+                    </section>
+
+                    <section>
+                        <h3>Message og Exchange</h3>
+
+                        <p>
+                            <b>message</b>: interface for en melding, har en body og eventuelle headere
+                        </p>
+                        <br />
+                        <p>
+                            <b>exchange</b>: en meldingscontainer, har informasjon om rutingen av en melding fra den
+                            konsumeres
+                        </p>
+                    </section>
+
+                    <section>
+                        <h3>Processor</h3>
+                        <p>
+                            Prosessorer gjør noe med meldinger mellom endepunkter.
+                        </p>
+                        <pre><code class="java" data-trim>
+public interface Processor {
+    /**
+    * Processes the message exchange
+    *
+    * @param exchange the message exchange
+    * @throws Exception if an internal processing error has occurred.
+    */
+    void process(Exchange exchange) throws Exception;
+}
+                        </code></pre>
+                        <p>Absolutt alt er en prosessor.</p>
+                    </section>
+                </section>
+
+                <section>
+                    <section>
+                        <h2>Hva kan man gjøre med camel?</h2>
+                    </section>
+                </section>
+
+            </div>
+        </div>
+
+        <script src="reveal.js-2.5.0/lib/js/head.min.js"></script>
+        <script src="reveal.js-2.5.0/js/reveal.min.js"></script>
+
+        <script>
+
+            // Full list of configuration options available here:
+            // https://github.com/hakimel/reveal.js#configuration
+            Reveal.initialize({
+                controls: true,
+                progress: true,
+                history: true,
+                center: true,
+                loop: false,
+
+                theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+                transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+                // Optional libraries used to extend on reveal.js
+                dependencies: [
+                    { src: 'reveal.js-2.5.0/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                    { src: 'reveal.js-2.5.0/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'reveal.js-2.5.0/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'reveal.js-2.5.0/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+                    { src: 'reveal.js-2.5.0/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+                    { src: 'reveal.js-2.5.0/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+                ]
+            });
+
+        </script>
+
+    </body>
+ </html>
