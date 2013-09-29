@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:camel="http://camel.apache.org/schema/spring"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context-3.1.xsd
+            http://camel.apache.org/schema/spring
+            http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <context:component-scan base-package="no.knowit.camel" />
+
+    <bean id="amqRedeliveryPolicy" class="org.apache.activemq.RedeliveryPolicy">
+        <property name="initialRedeliveryDelay" value="10" />
+        <property name="redeliveryDelay" value="10" />
+        <property name="maximumRedeliveries" value="0" />
+        <!-- må ha med denne, ellers får man exception i DestinationMapEntry.afterPropertiesSet() -->
+        <property name="queue" value=">" />
+    </bean>
+
+    <bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+        <constructor-arg value="vm://localhost?broker.persistent=false" />
+        <property name="watchTopicAdvisories" value="true" />
+        <property name="redeliveryPolicy" ref="amqRedeliveryPolicy" />
+    </bean>
+
+    <!-- http://activemq.apache.org/maven/5.6.0/activemq-pool/apidocs/org/apache/activemq/pool/PooledConnectionFactory.html -->
+    <!-- Ref dokumentasjonen er dette ikke en ordentlig connection-pool. Mer en session-pool. -->
+    <bean id="pooledConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory">
+        <constructor-arg index="0" ref="jmsConnectionFactory" />
+        <property name="maxConnections" value="1"/>
+        <property name="idleTimeout" value="0"/> <!-- AMQ-4366 workaround til activemq-5.9.0. -->
+        <property name="maximumActiveSessionPerConnection" value="1024"/>
+    </bean>
+
+    <bean id="txManager" class="org.springframework.jms.connection.JmsTransactionManager">
+        <property name="connectionFactory" ref="pooledConnectionFactory" />
+    </bean>
+
+    <bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
+        <property name="connectionFactory" ref="pooledConnectionFactory"/>
+        <property name="transacted" value="true"/>
+        <property name="transactionManager" ref="txManager" />
+        <property name="concurrentConsumers" value="1"/>
+    </bean>
+
+    <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+        <property name="configuration" ref="jmsConfig"/>
+    </bean>
+
+    <bean id="camelShutdownStrategy" class="org.apache.camel.impl.DefaultShutdownStrategy">
+        <property name="timeout" value="30" />
+        <property name="timeUnit" value="SECONDS" />
+    </bean>
+
+    <camel:errorHandler id="dlcErrorHandler" type="DeadLetterChannel" deadLetterUri="bean:no.ok.it.camel.aiit.ExceptionProcessor">
+        <camel:redeliveryPolicy
+                maximumRedeliveries="0"
+                redeliveryDelay="30000"
+                logHandled="true"
+                retriesExhaustedLogLevel="INFO"
+                retryAttemptedLogLevel="INFO"
+                logContinued="true"
+                logExhausted="true"
+                logRetryAttempted="true"
+                logStackTrace="true"
+                logRetryStackTrace="false"
+                />
+    </camel:errorHandler>
+
+    <camelContext id="camel-activemq" xmlns="http://camel.apache.org/schema/spring" errorHandlerRef="dlcErrorHandler">
+        <contextScan />
+    </camelContext>
+
+</beans>
