@@ -56,7 +56,7 @@
         <property name="timeUnit" value="SECONDS" />
     </bean>
 
-    <camel:errorHandler id="dlcErrorHandler" type="DeadLetterChannel" deadLetterUri="bean:no.ok.it.camel.aiit.ExceptionProcessor">
+    <camel:errorHandler id="dlc" type="DeadLetterChannel" deadLetterUri="activemq:deadletter">
         <camel:redeliveryPolicy
                 maximumRedeliveries="0"
                 redeliveryDelay="30000"
@@ -71,7 +71,7 @@
                 />
     </camel:errorHandler>
 
-    <camelContext id="camel-activemq" xmlns="http://camel.apache.org/schema/spring" errorHandlerRef="dlcErrorHandler">
+    <camelContext id="kamelåså" xmlns="http://camel.apache.org/schema/spring" errorHandlerRef="dlc" >
         <contextScan />
     </camelContext>
 
