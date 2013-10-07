@@ -2,7 +2,7 @@
  <html lang="no">
     <head>
         <meta charset="utf-8" />
-        <title>Camel schmamel</title>
+        <title>Kamelåså</title>
 
         <meta name="description" content="Presentasjon av Apache Camel for internt fagseminar." />
         <meta name="author" content="Robin Skoglund" />
@@ -33,7 +33,7 @@
             <div class="slides">
 
                 <section>
-                    <h1>Camel Schmamel</h1>
+                    <h1>Kamelåså</h1>
                     <pre><code class="java" data-trim>
 from("http:camel.apache.org")
     .filter(body().contains("buzzword")).to("file:/dev/null")
@@ -41,6 +41,8 @@ from("http:camel.apache.org")
     .to("mock:result");
                     </code></pre>
                 </section>
+
+
 
                 <section>
                     <h2>Apache Camel</h2>
@@ -52,6 +54,18 @@ from("http:camel.apache.org")
                     </ul>
                 </section>
 
+
+
+                <section>
+                    <h2>«Vi forstår hinanden ikke!»</h2>
+
+                    <video src="kamel.webm" controls>
+                        Your browser does not support the <code>video</code> element.
+                    </video>
+                </section>
+
+
+
                 <section>
                     <section>
                         <h2>Hva er Apache Camel?</h2>
@@ -60,9 +74,13 @@ from("http:camel.apache.org")
                         </blockquote>
                     </section>
 
+
+
                     <section>
                         <h1>Javel?</h1>
                     </section>
+
+
 
                     <section>
                         <h2>Begreper</h2>
@@ -82,17 +100,21 @@ from("http:camel.apache.org")
                         </blockquote>
                     </section>
 
+
+
                     <section>
                         <h3>Route</h3>
 
                         <pre><code class="java" data-trim>
-from("activemq:ldap-provisjonering.passord")
-    .unmarshal().xmlBeans() // transformer
+from("activemq:ldap-provisjonering.passord") // xml fra kø
+    .unmarshal().xmlBeans() // lag et objekt av xml
     .bean(passwordChangeService) // gjør noe
-    .marshal().xmlBeans().convertBodyTo(String.class) // transformer
+    .marshal().xmlBeans().convertBodyTo(String.class) // lag xml igjen
     .to("activemq:routing.meldingslobby.stop"); // send videre
                         </code></pre>
                     </section>
+
+
 
                     <section>
                         <h3>Component</h3>
@@ -106,6 +128,8 @@ from("activemq:foo").to("direct:result");
                         </code></pre>
                     </section>
 
+
+
                     <section>
                         <h3>Endpoint</h3>
                         <p>
@@ -114,10 +138,15 @@ from("activemq:foo").to("direct:result");
 
                         <pre><code class="java" data-trim>
 from("&lt;endpoint&gt;").to("&lt;endpoint&gt;");
+
+// endpoint = uri = component + endpointUri
 from("&lt;component&gt;:&lt;uri&gt;").to("&lt;component&gt;:&lt;uri&gt;");
+
 from("activemq:foo").to("direct:result");
                         </code></pre>
                     </section>
+
+
 
                     <section>
                         <h3>Message og Exchange</h3>
@@ -128,9 +157,11 @@ from("activemq:foo").to("direct:result");
                         <br />
                         <p>
                             <b>exchange</b>: en meldingscontainer, har informasjon om rutingen av en melding fra den
-                            konsumeres
+                            konsumeres (exception, retries, etc)
                         </p>
                     </section>
+
+
 
                     <section>
                         <h3>Processor</h3>
@@ -150,7 +181,35 @@ public interface Processor {
                         </code></pre>
                         <p>Absolutt alt er en prosessor.</p>
                     </section>
+
+
+
+                    <section>
+                        <h3>CamelContext</h3>
+
+                        <pre><code class="xml">
+&lt;beans ...&gt;
+
+    ...
+
+    &lt;camelContext xmlns="http://camel.apache.org/schema/spring"
+                id="kamelåså"
+                errorHandlerRef="dlc"&gt;
+
+        &lt;!-- plukk opp oppsett fra spring-contexten --&gt;
+        &lt;contextScan /&gt;
+
+    &lt;/camelContext&gt;
+
+&lt;/beans&gt;
+                        </code></pre>
+                    </section>
+                    <section>
+                        alttab til faktisk kodeeksempel
+                    </section>
                 </section>
+
+
 
                 <section>
                     <section>
