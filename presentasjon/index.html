@@ -13,10 +13,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
         <link rel="stylesheet" href="reveal.js-2.5.0/css/reveal.min.css" />
-        <link rel="stylesheet" href="reveal.js-2.5.0/css/theme/default.css" id="theme">
+        <link rel="stylesheet" href="reveal.js-2.5.0/css/theme/default.css" id="theme" />
 
         <!-- For syntax highlighting -->
-        <link rel="stylesheet" href="reveal.js-2.5.0/lib/css/zenburn.css">
+        <link rel="stylesheet" href="reveal.js-2.5.0/lib/css/zenburn.css" />
 
         <!-- If the query includes 'print-pdf', use the PDF print sheet -->
         <script>
@@ -45,6 +45,16 @@ from("http:camel.apache.org")
 
 
                 <section>
+                    <h2>«Vi forstår hinanden ikke!»</h2>
+
+                    <video src="kamel.webm" controls>
+                        Your browser does not support the <code>video</code> element.
+                    </video>
+                </section>
+
+
+
+                <section>
                     <h2>Apache Camel</h2>
 
                     <ul>
@@ -52,16 +62,6 @@ from("http:camel.apache.org")
                         <li>Hva kan man gjøre med det?</li>
                         <li>Drittslenging</li>
                     </ul>
-                </section>
-
-
-
-                <section>
-                    <h2>«Vi forstår hinanden ikke!»</h2>
-
-                    <video src="kamel.webm" controls>
-                        Your browser does not support the <code>video</code> element.
-                    </video>
                 </section>
 
 
@@ -205,7 +205,7 @@ public interface Processor {
                         </code></pre>
                     </section>
                     <section>
-                        alttab til faktisk kodeeksempel
+                        alttab til kodeeksempel
                     </section>
                 </section>
 
@@ -214,6 +214,136 @@ public interface Processor {
                 <section>
                     <section>
                         <h2>Hva kan man gjøre med camel?</h2>
+                    </section>
+
+
+
+                    <section>
+                        <h3>Svar: Man kan gjøre alt med camel</h3>
+
+                        <ul>
+                            <li></li>
+                        </ul>
+                    </section>
+
+
+                    <section>
+                        <h3>Men ikke gjør alt med camel</h3>
+                    </section>
+                </section>
+
+
+
+                <section>
+                    <section>
+                        <h2>Drittslenging</h2>
+                        <bq>«I didn't know wtf syggelekokle was, so I just gave him some teip rests»</bq>
+                    </section>
+
+
+
+                    <section>
+                        <h3>Testing</h3>
+
+                        <ul>
+                            <li>Testing mot reelt oppsett</li>
+                            <li>Testing med spring</li>
+                            <li>ProducerTemplates i feilhåndtering</li>
+                            <li>Iboende asynkronitet i testing</li>
+                            <li>foo</li>
+                            <li>foo</li>
+                        </ul>
+                    </section>
+
+
+
+                    <section>
+                        <h4>Testing mot reelt oppsett</h4>
+                        <ul>
+                            <li>Alle eksempler er helt mikke mus</li>
+                            <li>Ønsker å teste mot et oppsett så likt prodmiljøet som mulig</li>
+                        </ul>
+                    </section>
+
+
+
+                    <section>
+                        <h4>Testing med spring</h4>
+                    </section>
+
+
+
+                    <section>
+                        <h4>ProducerTemplates i feilhåndtering</h4>
+                        <pre><code class="java" data-trim>
+from("activemq:foo")
+    .onException(Exception.class)
+        .bean(myCustomErrorHandler)
+        .end()
+    .to("noe som kaster exception");
+                        </code></pre>
+                        <ul>
+                            <li>Hvis du i <code>myCustomErrorHandler</code> bruker en <code>@Produce</code> for å sende til
+                                en annen kø, så kan du ikke i unittesten asserte at du får meldinger til den køa.</li>
+                            <li>Workaround: lage en <code>@Produce ProducerTemplate</code> i unittesten og sette denne
+                                eksplisitt i <code>myCustomErrorHandler</code>.</li>
+                        </ul>
+                    </section>
+
+
+
+                    <section>
+                        <h4>Iboende asynkronitet i testing</h4>
+                    </section>
+
+
+
+                    <section>
+                        <h3>Feilhåndtering</h3>
+
+                        <p>
+                            Camel har feilhåndtering, men man kan ikke stole på den.
+                        </p>
+                        <p>
+                            Vi har for øyeblikket 43 tester for å verifisere at feilhåndtering oppfører seg
+                            som vi forventer og ønsker.
+                        </p>
+                    </section>
+
+
+
+                    <section>
+                        <h3>Feilhåntering: granularitet og scope</h3>
+                        <ul>
+                            <li>global errorhandler</li>
+                            <li>context-scope</li>
+                            <li>route-scope</li>
+                            <li>onException() vs. errorHandler()</li>
+                            <li>onException(RuntimeException.class) vs onException(T extends RuntimeException)</li>
+                        </ul>
+                    </section>
+
+
+
+                    <section>
+                        <h3>Feilhåndtering: synkrone kall og dlc</h3>
+
+                        <p>
+                            Eksempel: synkrone kall (direct) skal feile synkront, ikke havne på feilkø.
+                        </p>
+                    </section>
+
+
+
+                    <section>
+                        <h3>Feilhåndtering: synkront kall</h3>
+
+                        <p>
+                            Eksempel: synkrone kall (direct) skal feile synkront, ikke havne på feilkø.
+                        </p>
+                        <pre><code class="java" data-trim>
+
+                        </code></pre>
                     </section>
                 </section>
 
