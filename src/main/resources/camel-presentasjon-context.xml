@@ -27,21 +27,12 @@
         <property name="redeliveryPolicy" ref="amqRedeliveryPolicy" />
     </bean>
 
-    <!-- http://activemq.apache.org/maven/5.6.0/activemq-pool/apidocs/org/apache/activemq/pool/PooledConnectionFactory.html -->
-    <!-- Ref dokumentasjonen er dette ikke en ordentlig connection-pool. Mer en session-pool. -->
-    <bean id="pooledConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory">
-        <constructor-arg index="0" ref="jmsConnectionFactory" />
-        <property name="maxConnections" value="1"/>
-        <property name="idleTimeout" value="0"/> <!-- AMQ-4366 workaround til activemq-5.9.0. -->
-        <property name="maximumActiveSessionPerConnection" value="1024"/>
-    </bean>
-
     <bean id="txManager" class="org.springframework.jms.connection.JmsTransactionManager">
-        <property name="connectionFactory" ref="pooledConnectionFactory" />
+        <property name="connectionFactory" ref="jmsConnectionFactory" />
     </bean>
 
     <bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
-        <property name="connectionFactory" ref="pooledConnectionFactory"/>
+        <property name="connectionFactory" ref="jmsConnectionFactory"/>
         <property name="transacted" value="true"/>
         <property name="transactionManager" ref="txManager" />
         <property name="concurrentConsumers" value="1"/>
@@ -52,7 +43,7 @@
     </bean>
 
     <bean id="camelShutdownStrategy" class="org.apache.camel.impl.DefaultShutdownStrategy">
-        <property name="timeout" value="30" />
+        <property name="timeout" value="5" />
         <property name="timeUnit" value="SECONDS" />
     </bean>
 
