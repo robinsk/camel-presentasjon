@@ -14,11 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(CamelSpringJUnit4ClassRunner.class)
@@ -43,18 +39,14 @@ public class HalloRuteTest {
     }
 
     @Test
-    public void verifiser_at_det_blir_sagt_hallo_til_de_man_melder_om() {
+    public void verifiser_at_det_blir_sagt_hallo_til_de_man_melder_om() throws InterruptedException {
         hallokø.setExpectedMessageCount(2);
 
         producer.sendBody("activemq:hallo", "Danskebåten");
         producer.sendBody("activemq:hallo", "Foredrag");
 
-        List<String> forventetListe = new ArrayList<String>() {{
-            add("Danskebåten");
-            add("Foredrag");
-        }};
+        Thread.sleep(1000);
 
-        //assertThat(service.sagtHalloTil, hasItems("Danskebåten", "Foredrag"));
-        assertThat(service.sagtHalloTil, is(equalTo(forventetListe)));
+        assertThat(service.sagtHalloTil, hasItems("Danskebåten", "Foredrag"));
     }
 }

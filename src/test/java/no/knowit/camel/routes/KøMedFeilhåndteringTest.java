@@ -55,4 +55,31 @@ public class KøMedFeilhåndteringTest {
         feilkø.assertIsSatisfied();
         illargFeilkø.assertIsSatisfied();
     }
+
+    @Test
+    public void hva_skjer_om_vi_bruker_throwException() throws InterruptedException {
+        feilkø.expectedBodiesReceived("throwException ok");
+
+        producer.sendBody("activemq:kø.med.throwException", "throwException ok");
+
+        feilkø.assertIsSatisfied();
+    }
+
+    @Test
+    public void hva_skjer_om_vi_kaster_exception_i_en_processor() throws InterruptedException {
+        feilkø.expectedBodiesReceived("lol");
+
+        producer.sendBody("activemq:kø.med.kasting.av.exception.i.en.processor", "lol");
+
+        feilkø.assertIsSatisfied();
+    }
+
+    @Test
+    public void hva_skjer_om_man_kaster_exception_i_en_onException() throws InterruptedException {
+        feilkø.expectedBodiesReceived("wtf");
+
+        producer.sendBody("activemq:kø.med.kasting.av.exception.i.onException", "wtf");
+
+        feilkø.assertIsSatisfied();
+    }
 }
