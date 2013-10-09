@@ -126,6 +126,10 @@ from("activemq:ldap-provisjonering.passord") // xml fra kø
 from("activemq:foo").to("direct:result");
 //        ↳   komponent   ↵
                         </code></pre>
+                        <p>
+                            Finnes for øyeblikket ~165 komponenter, eks. atom, dns, ejb, file, imap, irc, nagios,
+                            scalate, twitter, printer, krati, gmail, activemq, ...
+                        </p>
                     </section>
 
 
@@ -222,13 +226,20 @@ public interface Processor {
                         <h3>Svar: Man kan gjøre alt med camel</h3>
 
                         <ul>
-                            <li></li>
+                            <li>De har 165 komponenter</li>
+                            <li>De støtter "alle" EIP</li>
+                            <li>Du kan sette opp en rute som som mottar epost, legger den på en ftp og transformerer den, så sender videre på twitter</li>
                         </ul>
                     </section>
 
 
                     <section>
                         <h3>Men ikke gjør alt med camel</h3>
+
+                        <ul>
+                            <li>De har 165 buzzword-kompatible komponenter</li>
+                            <li>Du kan sette opp en rute som sender en melding fra A til B synkront, men bruke et ukesverk på å sørge for at du kan stole på den</li>
+                        </ul>
                     </section>
                 </section>
 
@@ -243,32 +254,55 @@ public interface Processor {
 
 
                     <section>
-                        <h3>Testing</h3>
+                        <h3>Uffda</h3>
 
                         <ul>
-                            <li>Testing mot reelt oppsett</li>
-                            <li>Testing med spring</li>
-                            <li>ProducerTemplates i feilhåndtering</li>
-                            <li>Iboende asynkronitet i testing</li>
-                            <li>foo</li>
-                            <li>foo</li>
+                            <li>Transaskjoner</li>
+                            <li>DSL: deklarativ del vs. runtime?</li>
+                            <li>Testing</li>
+                            <li>Feilhåndtering</li>
                         </ul>
                     </section>
 
 
 
                     <section>
-                        <h4>Testing mot reelt oppsett</h4>
+                        <h4>Transaskjoner</h4>
+                        <pre><code class="java" data-trim>
+// hva skjer om java-prosessen dør på seg under prosessering?
+from("activemq:foo").to("xslt:t.xsl").bean(handler);
+
+// enn nå?
+from("activemq:foo").transacted().to("xslt:t.xsl").bean(handler);
+
+// enn nå?
+from("activemq:foo?transacted=true").to("xslt:t.xsl").bean(handler);
+                        </code></pre>
+                    </section>
+
+
+
+                    <section>
+                        <h4>DSL: deklarativ del vs. runtime</h4>
                         <ul>
-                            <li>Alle eksempler er helt mikke mus</li>
+                            <li>Man skriver DSL</li>
+                            <li>Er jeg java eller camel?</li>
+                            <li>Scope</li>
+                            <li>Exceptions</li>
+                        </ul>
+                    </section>
+
+
+
+                    <section>
+                        <h4>Testing</h4>
+                        <ul>
                             <li>Ønsker å teste mot et oppsett så likt prodmiljøet som mulig</li>
+                            <li>Mocking</li>
+                            <li>Asynkronitet</li>
+                            <li>Camel ft. Spring</li>
+                            <li>Camel ft. Spring &amp; ActiveMQ</li>
                         </ul>
-                    </section>
-
-
-
-                    <section>
-                        <h4>Testing med spring</h4>
                     </section>
 
 
@@ -288,12 +322,6 @@ from("activemq:foo")
                             <li>Workaround: lage en <code>@Produce ProducerTemplate</code> i unittesten og sette denne
                                 eksplisitt i <code>myCustomErrorHandler</code>.</li>
                         </ul>
-                    </section>
-
-
-
-                    <section>
-                        <h4>Iboende asynkronitet i testing</h4>
                     </section>
 
 
@@ -326,23 +354,233 @@ from("activemq:foo")
 
 
                     <section>
-                        <h3>Feilhåndtering: synkrone kall og dlc</h3>
-
-                        <p>
-                            Eksempel: synkrone kall (direct) skal feile synkront, ikke havne på feilkø.
-                        </p>
-                    </section>
-
-
-
-                    <section>
-                        <h3>Feilhåndtering: synkront kall</h3>
-
-                        <p>
-                            Eksempel: synkrone kall (direct) skal feile synkront, ikke havne på feilkø.
-                        </p>
-                        <pre><code class="java" data-trim>
-
+                        <h3>Feilhåndtering: debugging</h3>
+                        <pre><code data-trim>
+// 223 linjer stacktrace
+2013-10-09 19:09:17.614 INFO  org.apache.camel.util.CamelLogger.log()#176: Failed delivery for (MessageId: ID:pilates.local-60460-1381338557323-3:2:1:1:1 on ExchangeId: ID-pilates-local-60456-1381338556669-0-3). On delivery attempt: 0 caught: java.lang.IllegalArgumentException: Feiler exchange med id ID-pilates-local-60456-1381338556669-0-3
+2013-10-09 19:09:17.616 ERROR org.apache.camel.processor.FatalFallbackErrorHandler$1.done()#53: Exception occurred while trying to handle previously thrown exception on exchangeId: ID-pilates-local-60456-1381338556669-0-3 using: [Channel[Wrap[no.knowit.camel.routes.KøMedFeilhåndtering$2@5ade5cd9] -> no.knowit.camel.routes.KøMedFeilhåndtering$2@5ade5cd9]]. The previous and the new exception will be logged in the following.
+2013-10-09 19:09:17.620 ERROR org.apache.camel.processor.FatalFallbackErrorHandler$1.done()#54: \--> Previous exception on exchangeId: ID-pilates-local-60456-1381338556669-0-3
+java.lang.IllegalArgumentException: Feiler exchange med id ID-pilates-local-60456-1381338556669-0-3
+    at no.knowit.camel.routes.KøMedFeilhåndtering.kastIllegalArgumentException(KøMedFeilhåndtering.java:49) ~[classes/:na]
+    at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.6.0_41]
+    at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39) ~[na:1.6.0_41]
+    at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25) ~[na:1.6.0_41]
+    at java.lang.reflect.Method.invoke(Method.java:597) ~[na:1.6.0_41]
+    at org.apache.camel.component.bean.MethodInfo.invoke(MethodInfo.java:391) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.component.bean.MethodInfo$1.doProceed(MethodInfo.java:278) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.component.bean.MethodInfo$1.proceed(MethodInfo.java:251) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.component.bean.BeanProcessor.process(BeanProcessor.java:161) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.UnitOfWorkProcessor.process(UnitOfWorkProcessor.java:122) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.component.direct.DirectProducer.process(DirectProducer.java:60) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.impl.InterceptSendToEndpoint$1.process(InterceptSendToEndpoint.java:164) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.SendProcessor$2.doInAsyncProducer(SendProcessor.java:122) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.impl.ProducerCache.doInAsyncProducer(ProducerCache.java:298) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.SendProcessor.process(SendProcessor.java:117) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.processNext(DelegateAsyncProcessor.java:99) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.interceptor.BacklogTracerInterceptor.process(BacklogTracerInterceptor.java:84) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.processNext(DelegateAsyncProcessor.java:99) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.interceptor.TraceInterceptor.process(TraceInterceptor.java:91) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RedeliveryErrorHandler.processErrorHandler(RedeliveryErrorHandler.java:390) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RedeliveryErrorHandler.process(RedeliveryErrorHandler.java:273) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RouteContextProcessor.processNext(RouteContextProcessor.java:46) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.interceptor.DefaultChannel.process(DefaultChannel.java:335) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RouteContextProcessor.processNext(RouteContextProcessor.java:46) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.UnitOfWorkProcessor.processAsync(UnitOfWorkProcessor.java:150) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.UnitOfWorkProcessor.process(UnitOfWorkProcessor.java:117) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RouteInflightRepositoryProcessor.processNext(RouteInflightRepositoryProcessor.java:48) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.processNext(DelegateAsyncProcessor.java:99) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.management.InstrumentationProcessor.process(InstrumentationProcessor.java:72) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:99) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:86) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.component.jms.EndpointMessageListener.onMessage(EndpointMessageListener.java:104) [camel-jms-2.11.0.jar:2.11.0]
+    at org.springframework.jms.listener.AbstractMessageListenerContainer.doInvokeListener(AbstractMessageListenerContainer.java:562) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.AbstractMessageListenerContainer.invokeListener(AbstractMessageListenerContainer.java:500) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.AbstractMessageListenerContainer.doExecuteListener(AbstractMessageListenerContainer.java:468) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.AbstractPollingMessageListenerContainer.doReceiveAndExecute(AbstractPollingMessageListenerContainer.java:325) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.AbstractPollingMessageListenerContainer.receiveAndExecute(AbstractPollingMessageListenerContainer.java:243) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.invokeListener(DefaultMessageListenerContainer.java:1103) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.executeOngoingLoop(DefaultMessageListenerContainer.java:1095) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.run(DefaultMessageListenerContainer.java:992) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:895) [na:1.6.0_41]
+    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:918) [na:1.6.0_41]
+    at java.lang.Thread.run(Thread.java:680) [na:1.6.0_41]
+2013-10-09 19:09:17.633 ERROR org.apache.camel.processor.FatalFallbackErrorHandler$1.done()#55: \--> New exception on exchangeId: ID-pilates-local-60456-1381338556669-0-3
+java.lang.IllegalStateException: null
+    at no.knowit.camel.routes.KøMedFeilhåndtering$2.process(KøMedFeilhåndtering.java:39) ~[classes/:na]
+    at org.apache.camel.util.AsyncProcessorConverterHelper$ProcessorToAsyncProcessorBridge.process(AsyncProcessorConverterHelper.java:61) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.processNext(DelegateAsyncProcessor.java:99) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.processNext(DelegateAsyncProcessor.java:99) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.interceptor.BacklogTracerInterceptor.process(BacklogTracerInterceptor.java:84) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.processNext(DelegateAsyncProcessor.java:99) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.interceptor.TraceInterceptor.process(TraceInterceptor.java:91) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RouteContextProcessor.processNext(RouteContextProcessor.java:46) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.interceptor.DefaultChannel.process(DefaultChannel.java:335) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.processNext(DelegateAsyncProcessor.java:99) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.FatalFallbackErrorHandler.processNext(FatalFallbackErrorHandler.java:42) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RedeliveryErrorHandler.deliverToFailureProcessor(RedeliveryErrorHandler.java:825) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RedeliveryErrorHandler.processErrorHandler(RedeliveryErrorHandler.java:329) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RedeliveryErrorHandler.process(RedeliveryErrorHandler.java:273) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RouteContextProcessor.processNext(RouteContextProcessor.java:46) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.interceptor.DefaultChannel.process(DefaultChannel.java:335) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RouteContextProcessor.processNext(RouteContextProcessor.java:46) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.UnitOfWorkProcessor.processAsync(UnitOfWorkProcessor.java:150) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.UnitOfWorkProcessor.process(UnitOfWorkProcessor.java:117) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RouteInflightRepositoryProcessor.processNext(RouteInflightRepositoryProcessor.java:48) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.processNext(DelegateAsyncProcessor.java:99) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.management.InstrumentationProcessor.process(InstrumentationProcessor.java:72) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:99) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:86) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.component.jms.EndpointMessageListener.onMessage(EndpointMessageListener.java:104) [camel-jms-2.11.0.jar:2.11.0]
+    at org.springframework.jms.listener.AbstractMessageListenerContainer.doInvokeListener(AbstractMessageListenerContainer.java:562) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.AbstractMessageListenerContainer.invokeListener(AbstractMessageListenerContainer.java:500) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.AbstractMessageListenerContainer.doExecuteListener(AbstractMessageListenerContainer.java:468) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.AbstractPollingMessageListenerContainer.doReceiveAndExecute(AbstractPollingMessageListenerContainer.java:325) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.AbstractPollingMessageListenerContainer.receiveAndExecute(AbstractPollingMessageListenerContainer.java:243) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.invokeListener(DefaultMessageListenerContainer.java:1103) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.executeOngoingLoop(DefaultMessageListenerContainer.java:1095) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.run(DefaultMessageListenerContainer.java:992) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:895) [na:1.6.0_41]
+    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:918) [na:1.6.0_41]
+    at java.lang.Thread.run(Thread.java:680) [na:1.6.0_41]
+2013-10-09 19:09:17.645 INFO  org.apache.camel.util.CamelLogger.log()#218: Failed delivery for (MessageId: ID:pilates.local-60460-1381338557323-3:2:1:1:1 on ExchangeId: ID-pilates-local-60456-1381338556669-0-3). Exhausted after delivery attempt: 1 caught: java.lang.IllegalArgumentException: Feiler exchange med id ID-pilates-local-60456-1381338556669-0-3. Processed by failure processor: FatalFallbackErrorHandler[Channel[Wrap[no.knowit.camel.routes.KøMedFeilhåndtering$2@5ade5cd9] -> no.knowit.camel.routes.KøMedFeilhåndtering$2@5ade5cd9]]
+java.lang.IllegalStateException: null
+    at no.knowit.camel.routes.KøMedFeilhåndtering$2.process(KøMedFeilhåndtering.java:39) ~[classes/:na]
+    at org.apache.camel.util.AsyncProcessorConverterHelper$ProcessorToAsyncProcessorBridge.process(AsyncProcessorConverterHelper.java:61) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.processNext(DelegateAsyncProcessor.java:99) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.processNext(DelegateAsyncProcessor.java:99) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.interceptor.BacklogTracerInterceptor.process(BacklogTracerInterceptor.java:84) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.processNext(DelegateAsyncProcessor.java:99) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.interceptor.TraceInterceptor.process(TraceInterceptor.java:91) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RouteContextProcessor.processNext(RouteContextProcessor.java:46) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.interceptor.DefaultChannel.process(DefaultChannel.java:335) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.processNext(DelegateAsyncProcessor.java:99) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.FatalFallbackErrorHandler.processNext(FatalFallbackErrorHandler.java:42) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RedeliveryErrorHandler.deliverToFailureProcessor(RedeliveryErrorHandler.java:825) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RedeliveryErrorHandler.processErrorHandler(RedeliveryErrorHandler.java:329) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RedeliveryErrorHandler.process(RedeliveryErrorHandler.java:273) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RouteContextProcessor.processNext(RouteContextProcessor.java:46) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.interceptor.DefaultChannel.process(DefaultChannel.java:335) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RouteContextProcessor.processNext(RouteContextProcessor.java:46) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.UnitOfWorkProcessor.processAsync(UnitOfWorkProcessor.java:150) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.UnitOfWorkProcessor.process(UnitOfWorkProcessor.java:117) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RouteInflightRepositoryProcessor.processNext(RouteInflightRepositoryProcessor.java:48) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.processNext(DelegateAsyncProcessor.java:99) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.management.InstrumentationProcessor.process(InstrumentationProcessor.java:72) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:99) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:86) [camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.component.jms.EndpointMessageListener.onMessage(EndpointMessageListener.java:104) [camel-jms-2.11.0.jar:2.11.0]
+    at org.springframework.jms.listener.AbstractMessageListenerContainer.doInvokeListener(AbstractMessageListenerContainer.java:562) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.AbstractMessageListenerContainer.invokeListener(AbstractMessageListenerContainer.java:500) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.AbstractMessageListenerContainer.doExecuteListener(AbstractMessageListenerContainer.java:468) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.AbstractPollingMessageListenerContainer.doReceiveAndExecute(AbstractPollingMessageListenerContainer.java:325) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.AbstractPollingMessageListenerContainer.receiveAndExecute(AbstractPollingMessageListenerContainer.java:243) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.invokeListener(DefaultMessageListenerContainer.java:1103) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.executeOngoingLoop(DefaultMessageListenerContainer.java:1095) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.run(DefaultMessageListenerContainer.java:992) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:895) [na:1.6.0_41]
+    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:918) [na:1.6.0_41]
+    at java.lang.Thread.run(Thread.java:680) [na:1.6.0_41]
+2013-10-09 19:09:17.657 WARN  org.apache.camel.util.CamelLogger.log()#224: Execution of JMS message listener failed. Caused by: [org.apache.camel.RuntimeCamelException - java.lang.IllegalStateException]
+org.apache.camel.RuntimeCamelException: java.lang.IllegalStateException
+    at org.apache.camel.util.ObjectHelper.wrapRuntimeCamelException(ObjectHelper.java:1338) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.component.jms.EndpointMessageListener$EndpointMessageListenerAsyncCallback.done(EndpointMessageListener.java:187) ~[camel-jms-2.11.0.jar:2.11.0]
+    at org.apache.camel.component.jms.EndpointMessageListener.onMessage(EndpointMessageListener.java:108) ~[camel-jms-2.11.0.jar:2.11.0]
+    at org.springframework.jms.listener.AbstractMessageListenerContainer.doInvokeListener(AbstractMessageListenerContainer.java:562) ~[spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.AbstractMessageListenerContainer.invokeListener(AbstractMessageListenerContainer.java:500) ~[spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.AbstractMessageListenerContainer.doExecuteListener(AbstractMessageListenerContainer.java:468) ~[spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.AbstractPollingMessageListenerContainer.doReceiveAndExecute(AbstractPollingMessageListenerContainer.java:325) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.AbstractPollingMessageListenerContainer.receiveAndExecute(AbstractPollingMessageListenerContainer.java:243) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.invokeListener(DefaultMessageListenerContainer.java:1103) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.executeOngoingLoop(DefaultMessageListenerContainer.java:1095) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at org.springframework.jms.listener.DefaultMessageListenerContainer$AsyncMessageListenerInvoker.run(DefaultMessageListenerContainer.java:992) [spring-jms-3.2.4.RELEASE.jar:3.2.4.RELEASE]
+    at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:895) [na:1.6.0_41]
+    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:918) [na:1.6.0_41]
+    at java.lang.Thread.run(Thread.java:680) [na:1.6.0_41]
+Caused by: java.lang.IllegalStateException: null
+    at no.knowit.camel.routes.KøMedFeilhåndtering$2.process(KøMedFeilhåndtering.java:39) ~[classes/:na]
+    at org.apache.camel.util.AsyncProcessorConverterHelper$ProcessorToAsyncProcessorBridge.process(AsyncProcessorConverterHelper.java:61) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.processNext(DelegateAsyncProcessor.java:99) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.processNext(DelegateAsyncProcessor.java:99) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.interceptor.BacklogTracerInterceptor.process(BacklogTracerInterceptor.java:84) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.processNext(DelegateAsyncProcessor.java:99) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.interceptor.TraceInterceptor.process(TraceInterceptor.java:91) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RouteContextProcessor.processNext(RouteContextProcessor.java:46) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.interceptor.DefaultChannel.process(DefaultChannel.java:335) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.processNext(DelegateAsyncProcessor.java:99) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.FatalFallbackErrorHandler.processNext(FatalFallbackErrorHandler.java:42) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RedeliveryErrorHandler.deliverToFailureProcessor(RedeliveryErrorHandler.java:825) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RedeliveryErrorHandler.processErrorHandler(RedeliveryErrorHandler.java:329) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RedeliveryErrorHandler.process(RedeliveryErrorHandler.java:273) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RouteContextProcessor.processNext(RouteContextProcessor.java:46) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.interceptor.DefaultChannel.process(DefaultChannel.java:335) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RouteContextProcessor.processNext(RouteContextProcessor.java:46) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.UnitOfWorkProcessor.processAsync(UnitOfWorkProcessor.java:150) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.UnitOfWorkProcessor.process(UnitOfWorkProcessor.java:117) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.RouteInflightRepositoryProcessor.processNext(RouteInflightRepositoryProcessor.java:48) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:73) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.processNext(DelegateAsyncProcessor.java:99) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:90) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.management.InstrumentationProcessor.process(InstrumentationProcessor.java:72) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.util.AsyncProcessorHelper.process(AsyncProcessorHelper.java:99) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.processor.DelegateAsyncProcessor.process(DelegateAsyncProcessor.java:86) ~[camel-core-2.11.0.jar:2.11.0]
+    at org.apache.camel.component.jms.EndpointMessageListener.onMessage(EndpointMessageListener.java:104) ~[camel-jms-2.11.0.jar:2.11.0]
+    ... 11 common frames omitted
                         </code></pre>
                     </section>
                 </section>
